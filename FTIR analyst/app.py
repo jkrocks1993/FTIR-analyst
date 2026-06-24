@@ -177,24 +177,89 @@ def generate_example_spectrum():
 
 # Functional group library (mid-IR)
 FUNCTIONAL_GROUPS = [
-    ("O-H stretch (H-bonded, broad)", 3200, 3550, "Alcohols, carboxylic acids, water"),
-    ("O-H stretch (free, sharp)", 3580, 3650, "Dilute alcohols/phenols"),
-    ("N-H stretch (amines/amides)", 3300, 3500, "Primary/secondary amines, amides (often 2 bands)"),
-    ("C-H stretch (asym CH₂)", 2915, 2935, "Alkanes, lipids"),
-    ("C-H stretch (asym CH₃)", 2950, 2975, "Methyl groups"),
-    ("C-H stretch (sym CH₂/CH₃)", 2850, 2885, "Alkanes"),
-    ("C≡C stretch (alkynes)", 2100, 2260, "Terminal alkynes (weak)"),
-    ("C=O stretch (carbonyls)", 1680, 1750, "Ketones, aldehydes, esters, acids (very strong)"),
-    ("C=O stretch (amides)", 1630, 1690, "Amides I band"),
-    ("C=C stretch (alkenes/aromatics)", 1580, 1680, "Alkenes, aromatic rings"),
-    ("C-H bend (CH₂ scissor)", 1440, 1470, "Alkanes"),
-    ("C-H bend (CH₃ umbrella)", 1365, 1390, "Methyl groups"),
-    ("C-O stretch (esters/alcohols)", 1000, 1300, "Strong in esters, ethers, alcohols"),
-    ("C-F stretch", 1000, 1400, "Fluorinated compounds"),
-    ("Si-O-Si / silicate", 900, 1100, "Silicones, minerals"),
-    ("C-H out-of-plane (aromatic)", 690, 900, "Aromatic substitution pattern"),
-]
+    # === Hydroxyl & Amine stretches ===
+    ("O-H stretch (free, sharp)", 3580, 3650, "strong, sharp — alcohols, phenols (dilute)"),
+    ("O-H stretch (H-bonded, broad)", 3200, 3550, "strong, broad — alcohols, carboxylic acids, water"),
+    ("N-H stretch (primary amine)", 3300, 3500, "medium, often two bands — primary amines"),
+    ("N-H stretch (secondary amine)", 3300, 3400, "medium — secondary amines"),
+    ("N-H stretch (amides)", 3100, 3500, "medium-strong, broad — amides"),
+    ("O-H stretch (carboxylic acids)", 2500, 3300, "very broad, strong — carboxylic acids (dimer)"),
 
+    # === C-H stretches ===
+    ("C-H stretch (aromatic)", 3000, 3100, "medium — aromatic rings"),
+    ("=C-H stretch (alkenes)", 3020, 3080, "medium — alkenes"),
+    ("C-H stretch (asym CH₃)", 2950, 2975, "strong — methyl groups"),
+    ("C-H stretch (asym CH₂)", 2915, 2935, "strong — methylene groups"),
+    ("C-H stretch (sym CH₃)", 2865, 2885, "strong — methyl groups"),
+    ("C-H stretch (sym CH₂)", 2845, 2865, "strong — methylene groups"),
+    ("C-H stretch (aldehyde)", 2700, 2900, "medium, two bands — aldehydes (characteristic)"),
+
+    # === Triple bond region ===
+    ("C≡C stretch (alkynes)", 2100, 2260, "weak-medium — terminal alkynes"),
+    ("C≡N stretch (nitriles)", 2200, 2260, "sharp, medium-strong — nitriles"),
+    ("N=C=O (isocyanates)", 2250, 2275, "very strong, sharp — isocyanates"),
+
+    # === Carbonyl region (detailed) ===
+    ("C=O stretch (acid chlorides)", 1780, 1820, "very strong — acid chlorides"),
+    ("C=O stretch (esters)", 1730, 1750, "very strong — esters"),
+    ("C=O stretch (aldehydes)", 1720, 1740, "strong — aldehydes"),
+    ("C=O stretch (ketones)", 1705, 1725, "strong — ketones"),
+    ("C=O stretch (carboxylic acids)", 1700, 1725, "strong, broad — carboxylic acids"),
+    ("C=O stretch (amides I)", 1630, 1690, "strong — primary/secondary amides"),
+    ("C=O stretch (conjugated)", 1650, 1680, "strong — conjugated carbonyls"),
+    ("C=O stretch (anhydrides)", 1800, 1850, "strong, two bands — anhydrides"),
+
+    # === C=C, aromatic, Amide II ===
+    ("C=C stretch (alkenes)", 1620, 1680, "variable — alkenes"),
+    ("C=C stretch (aromatic)", 1580, 1600, "strong — aromatic rings"),
+    ("Amide II (N-H bend + C-N)", 1510, 1570, "strong — amides"),
+    ("Aromatic ring breathing", 1450, 1500, "medium — aromatic rings"),
+
+    # === C-H bending ===
+    ("C-H bend (CH₂ scissor)", 1440, 1470, "medium — alkanes"),
+    ("C-H bend (CH₃ asym)", 1445, 1465, "medium — methyl"),
+    ("C-H bend (CH₃ sym umbrella)", 1365, 1390, "medium-strong — methyl groups (characteristic)"),
+
+    # === C-O, C-N, fingerprint ===
+    ("C-O stretch (esters)", 1150, 1250, "very strong — esters"),
+    ("C-O stretch (alcohols/ethers)", 1000, 1200, "strong — alcohols, ethers"),
+    ("C-N stretch (amines)", 1020, 1250, "medium — amines"),
+    ("C-O-C stretch (ethers)", 1050, 1150, "strong — ethers"),
+
+    # === Sulfur compounds ===
+    ("S-H stretch (thiols)", 2550, 2600, "weak, sharp — thiols"),
+    ("S=O stretch (sulfoxides)", 1030, 1070, "strong — sulfoxides"),
+    ("S=O stretch (sulfones)", 1120, 1160, "strong — sulfones"),
+    ("S=O stretch (sulfonamides)", 1150, 1180, "strong — sulfonamides"),
+    ("S=O stretch (sulfonates)", 1350, 1370, "very strong — sulfonates"),
+
+    # === Phosphorus compounds ===
+    ("P=O stretch", 1200, 1300, "strong — phosphates, phosphonates"),
+    ("P-O-C stretch", 950, 1050, "strong — phosphate esters"),
+
+    # === Halogens ===
+    ("C-F stretch", 1000, 1400, "very strong, multiple — fluorinated compounds"),
+    ("C-Cl stretch", 600, 800, "strong — chlorinated compounds"),
+    ("C-Br stretch", 500, 650, "strong — brominated compounds"),
+
+    # === Inorganic / Environmental relevant ===
+    ("Carbonate (CO₃²⁻)", 1400, 1450, "strong — carbonates"),
+    ("Sulfate (SO₄²⁻)", 1100, 1150, "strong — sulfates"),
+    ("Phosphate (PO₄³⁻)", 1000, 1100, "strong — phosphates"),
+    ("Nitrate (NO₃⁻)", 1350, 1380, "strong — nitrates"),
+    ("Silicate / Si-O", 900, 1100, "very strong — silicates, quartz, glass"),
+
+    # === Aromatic substitution (fingerprint) ===
+    ("Aromatic C-H oop (monosubstituted)", 690, 710, "strong — monosubstituted benzene"),
+    ("Aromatic C-H oop (ortho)", 735, 770, "strong — ortho-disubstituted"),
+    ("Aromatic C-H oop (meta)", 680, 710, "strong — meta-disubstituted"),
+    ("Aromatic C-H oop (para)", 810, 840, "strong — para-disubstituted"),
+
+    # === Other useful ===
+    ("N=O stretch (nitro)", 1500, 1550, "strong — nitro compounds"),
+    ("C≡C-H (terminal alkyne C-H)", 3300, 3320, "strong, sharp — terminal alkynes"),
+    ("Si-CH₃", 1250, 1260, "strong — silicones, PDMS"),
+]
 
 def assign_functional_groups(peak_wn):
     """Return comma-separated list of possible functional groups for a given wavenumber."""
