@@ -557,3 +557,8 @@ with tab_export:
 # Footer
 st.divider()
 st.caption("FTIR Processor • Fixed baseline handling • June 2026")
+st.markdown(
+    "<div style='text-align:center; color:#888;'>Made with ❤️ for researchers • "
+    "<a href='https://ko-fi.com/jayakrishnash001' target='_blank'>Support on Ko-fi</a></div>",
+    unsafe_allow_html=True
+)
