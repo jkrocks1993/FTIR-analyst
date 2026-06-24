@@ -59,15 +59,15 @@ st.set_page_config(
 
 def baseline_als(y, lam=1e5, p=0.01, niter=10):
     """
-    Asymmetric Least Squares (ALS) baseline correction.
-    More robust version that avoids shape errors in newer scipy.
+    Asymmetric Least Squares baseline correction.
+    Fixed version with shape safety and fallback for short arrays.
     """
     from scipy.sparse.linalg import spsolve
 
     y = np.asarray(y, dtype=float)
     L = len(y)
 
-    if L < 5:   # Too short after cropping — return flat baseline
+    if L < 10:                    # Too short after cropping
         return np.zeros_like(y)
 
     D = sparse.diags([1, -2, 1], [0, -1, 1], shape=(L - 2, L))
