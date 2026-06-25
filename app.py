@@ -184,6 +184,114 @@ FUNCTIONAL_GROUPS = [
     ("Aromatic C-H oop (meta)", 680, 710, "strong — meta-disubstituted"),
     ("Aromatic C-H oop (para)", 810, 840, "strong — para-disubstituted"),
     ("N=O stretch (nitro)", 1500, 1550, "strong — nitro compounds"),
+    # ========== ORGANIC FUNCTIONAL GROUPS ==========
+    # O-H / N-H
+    ("O-H stretch (free, sharp)", 3580, 3650, "strong, sharp — alcohols, phenols (dilute)"),
+    ("O-H stretch (H-bonded, broad)", 3200, 3550, "strong, broad — alcohols, carboxylic acids, water"),
+    ("N-H stretch (primary amine)", 3300, 3500, "medium, often two bands"),
+    ("N-H stretch (secondary amine)", 3300, 3400, "medium"),
+    ("N-H stretch (amides)", 3100, 3500, "medium-strong, broad"),
+    ("O-H stretch (carboxylic acids, dimer)", 2500, 3300, "very broad, strong"),
+
+    # C-H
+    ("C-H stretch (aromatic)", 3000, 3100, "medium"),
+    ("=C-H stretch (alkenes)", 3020, 3080, "medium"),
+    ("C-H stretch (asym CH₃)", 2950, 2975, "strong"),
+    ("C-H stretch (asym CH₂)", 2915, 2935, "strong"),
+    ("C-H stretch (sym CH₃)", 2865, 2885, "strong"),
+    ("C-H stretch (sym CH₂)", 2845, 2865, "strong"),
+    ("C-H stretch (aldehyde)", 2700, 2900, "medium, characteristic doublet"),
+
+    # Triple bonds
+    ("C≡C stretch (alkynes)", 2100, 2260, "weak-medium"),
+    ("C≡N stretch (nitriles)", 2200, 2260, "sharp, medium-strong"),
+    ("N=C=O (isocyanates)", 2250, 2275, "very strong, sharp"),
+
+    # Carbonyls
+    ("C=O stretch (acid chlorides)", 1780, 1820, "very strong"),
+    ("C=O stretch (esters)", 1730, 1750, "very strong"),
+    ("C=O stretch (aldehydes)", 1720, 1740, "strong"),
+    ("C=O stretch (ketones)", 1705, 1725, "strong"),
+    ("C=O stretch (carboxylic acids)", 1700, 1725, "strong, broad"),
+    ("C=O stretch (amides I)", 1630, 1690, "strong"),
+    ("C=O stretch (conjugated)", 1650, 1680, "strong"),
+    ("C=O stretch (anhydrides)", 1800, 1850, "strong, two bands"),
+
+    # C=C / Aromatic / Amide II
+    ("C=C stretch (alkenes)", 1620, 1680, "variable"),
+    ("C=C stretch (aromatic)", 1580, 1600, "strong"),
+    ("Amide II (N-H bend + C-N)", 1510, 1570, "strong"),
+    ("Aromatic ring breathing", 1450, 1500, "medium"),
+
+    # C-H bending
+    ("C-H bend (CH₂ scissor)", 1440, 1470, "medium"),
+    ("C-H bend (CH₃ asym)", 1445, 1465, "medium"),
+    ("C-H bend (CH₃ sym umbrella)", 1365, 1390, "medium-strong"),
+
+    # C-O / C-N
+    ("C-O stretch (esters)", 1150, 1250, "very strong"),
+    ("C-O stretch (alcohols/ethers)", 1000, 1200, "strong"),
+    ("C-N stretch (amines)", 1020, 1250, "medium"),
+    ("C-O-C stretch (ethers)", 1050, 1150, "strong"),
+
+    # Sulfur
+    ("S-H stretch (thiols)", 2550, 2600, "weak, sharp"),
+    ("S=O stretch (sulfoxides)", 1030, 1070, "strong"),
+    ("S=O stretch (sulfones)", 1120, 1160, "strong"),
+    ("S=O stretch (sulfonamides)", 1150, 1180, "strong"),
+    ("S=O stretch (sulfonates)", 1350, 1370, "very strong"),
+
+    # Phosphorus
+    ("P=O stretch", 1200, 1300, "strong"),
+    ("P-O-C stretch", 950, 1050, "strong"),
+
+    # Halogens
+    ("C-F stretch", 1000, 1400, "very strong, multiple bands"),
+    ("C-Cl stretch", 600, 800, "strong"),
+    ("C-Br stretch", 500, 650, "strong"),
+
+    # Nitro & others
+    ("N=O stretch (nitro)", 1500, 1550, "strong"),
+    ("C≡C-H (terminal alkyne)", 3300, 3320, "strong, sharp"),
+
+    # ========== INORGANIC / METAL OXIDES / MINERALS ==========
+    # Common Metal Oxides
+    ("Ti-O (TiO₂)", 500, 700, "strong — anatase/rutile"),
+    ("Fe-O (Fe₂O₃ hematite)", 500, 650, "strong"),
+    ("Fe-O (Fe₃O₄ magnetite)", 550, 650, "strong"),
+    ("Zn-O (ZnO)", 400, 600, "strong"),
+    ("Cu-O (CuO)", 400, 600, "strong"),
+    ("Cu₂O", 600, 650, "medium"),
+    ("Al-O (Al₂O₃ alumina)", 500, 800, "strong"),
+    ("Mg-O (MgO)", 400, 600, "medium-strong"),
+    ("Ni-O (NiO)", 400, 550, "strong"),
+    ("Co-O (Co₃O₄)", 550, 670, "strong"),
+    ("Mn-O (MnO₂ / Mn₃O₄)", 500, 650, "strong"),
+    ("Cr-O (Cr₂O₃)", 500, 650, "strong"),
+    ("General M-O (metal oxides)", 400, 700, "variable — many transition metal oxides"),
+
+    # Mixed oxides & Spinels
+    ("Spinel structure (M-O)", 500, 700, "strong — ferrites, aluminates"),
+    ("Perovskite (M-O)", 500, 700, "strong"),
+
+    # Silicates & Silica
+    ("Si-O stretch (SiO₂ / quartz)", 950, 1100, "very strong"),
+    ("Si-O-Si (siloxanes/silicates)", 1000, 1100, "very strong"),
+    ("Zeolite framework (T-O-T)", 950, 1100, "strong"),
+
+    # Clays & Minerals
+    ("Clay minerals (Al-O-Si / Si-O)", 900, 1100, "strong — kaolinite, montmorillonite"),
+    ("Structural OH in clays/micas", 3600, 3700, "sharp"),
+    ("Carbonate (CO₃²⁻) asymmetric", 1400, 1450, "strong — calcite, dolomite"),
+    ("Carbonate out-of-plane bend", 850, 880, "medium"),
+    ("Sulfate (SO₄²⁻)", 1100, 1150, "strong — gypsum, metal sulfates"),
+    ("Phosphate (PO₄³⁻)", 1000, 1100, "strong — apatite, metal phosphates"),
+    ("Nitrate (NO₃⁻)", 1350, 1380, "strong"),
+    ("Perchlorate (ClO₄⁻)", 1080, 1120, "strong"),
+
+    # Hydroxides & Water
+    ("M-OH (metal hydroxides)", 800, 1100, "medium-strong"),
+    ("Adsorbed/structural water (H-O-H bend)", 1600, 1650, "medium"),
 ]
 
 
