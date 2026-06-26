@@ -224,7 +224,7 @@ FUNCTIONAL_GROUPS = [
     ("Phosphate (PO₄³⁻)", 1000, 1100, "Apatite, metal phosphates"),
     ("Nitrate (NO₃⁻)", 1350, 1380, "Metal nitrates"),
     ("M-OH (metal hydroxides)", 800, 1100, "Metal hydroxides"),
-    ("Structural OH in minerals", 3600, 3700, "Clays, micas"),3
+    ("Structural OH in minerals", 3600, 3700, "Clays, micas"),
     # === Expanded Inorganic / Metal Oxides / Minerals ===
 ("Ti-O (TiO₂ anatase)", 500, 700, "Strong — common in pigments, photocatalysts"),
 ("Ti-O (TiO₂ rutile)", 400, 600, "Strong"),
