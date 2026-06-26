@@ -466,17 +466,17 @@ def apply_processing_pipeline(wn, y, params):
     
     return wn, y, " | ".join(log) if log else "No processing applied"
 
-
-def create_spectrum_plot(spectra_data, selected_names, use_processed=True, peak_data=None, primary_name=None):
-    """Create interactive Plotly figure for one or more spectra."""
+def create_spectrum_plot(spectra_data, selected_names, use_processed=True, 
+                         peak_data=None, primary_name=None, title="FTIR Spectra"):
+    """Improved interactive Plotly figure for FTIR spectra."""
     fig = go.Figure()
     color_palette = px.colors.qualitative.Plotly + px.colors.qualitative.Set2
-    
+
     for idx, name in enumerate(selected_names):
         if name not in spectra_data:
             continue
         d = spectra_data[name]
-        
+
         if use_processed and d.get("processed_int") is not None:
             x = d.get("processed_wn", d["wn"])
             y = d["processed_int"]
@@ -485,17 +485,17 @@ def create_spectrum_plot(spectra_data, selected_names, use_processed=True, peak_
             x = d["wn"]
             y = d["raw_int"]
             label = f"{name} (raw)"
-        
+
         fig.add_trace(go.Scatter(
             x=x,
             y=y,
             mode="lines",
             name=label,
-            line=dict(color=color_palette[idx % len(color_palette)], width=1.8),
+            line=dict(color=color_palette[idx % len(color_palette)], width=1.6),
             hovertemplate="<b>%{fullData.name}</b><br>Wavenumber: %{x:.1f} cm⁻¹<br>Intensity: %{y:.4f}<extra></extra>"
         ))
-    
-    # Add detected peaks as markers (only if provided and matches primary)
+
+    # Add detected peaks
     if peak_data and primary_name and primary_name in selected_names:
         fig.add_trace(go.Scatter(
             x=peak_data["peak_wn"],
@@ -508,13 +508,13 @@ def create_spectrum_plot(spectra_data, selected_names, use_processed=True, peak_
             name="Detected Peaks",
             hovertemplate="<b>Peak</b><br>%{x:.1f} cm⁻¹<br>Intensity: %{y:.4f}<extra></extra>"
         ))
-    
+
     fig.update_layout(
-        title=dict(text="FTIR Spectra Overview", font=dict(size=18)),
+        title=dict(text=title, font=dict(size=18)),
         xaxis_title="Wavenumber (cm⁻¹)",
         yaxis_title="Intensity (a.u.)",
-        xaxis=dict(autorange="reversed", showgrid=True, gridwidth=0.5, gridcolor="#E0E0E0"),
-        yaxis=dict(showgrid=True, gridwidth=0.5, gridcolor="#E0E0E0"),
+        xaxis=dict(autorange="reversed", showgrid=True, gridwidth=0.5),
+        yaxis=dict(showgrid=True, gridwidth=0.5),
         hovermode="x unified",
         template="plotly_white",
         height=620,
@@ -526,18 +526,14 @@ def create_spectrum_plot(spectra_data, selected_names, use_processed=True, peak_
             x=1,
             font=dict(size=10)
         ),
-        margin=dict(l=60, r=30, t=60, b=50)
+        margin=dict(l=60, r=30, t=70, b=50)
     )
-    
-    # Add subtle annotation for typical regions
-    fig.add_vrect(x0=2800, x1=3100, fillcolor="rgba(255,200,0,0.08)", layer="below", line_width=0,
-                  annotation_text="C-H stretch", annotation_position="top left")
-    fig.add_vrect(x0=1650, x1=1750, fillcolor="rgba(0,200,255,0.08)", layer="below", line_width=0,
-                  annotation_text="C=O", annotation_position="top left")
-    
+
+    # Subtle region annotations
+    fig.add_vrect(x0=2800, x1=3100, fillcolor="rgba(255,200,0,0.07)", layer="below", line_width=0)
+    fig.add_vrect(x0=1650, x1=1750, fillcolor="rgba(0,200,255,0.07)", layer="below", line_width=0)
+
     return fig
-
-
 # ============================================================
 # MAIN APPLICATION
 # ============================================================
