@@ -284,6 +284,122 @@ FUNCTIONAL_GROUPS = [
 ("WO₃", 600, 800, "Strong — electrochromic materials"),
 ("Mo-O (MoO₃)", 800, 1000, "Strong"),
 ("V-O (V₂O₅)", 800, 1000, "Strong"),
+# O-H and N-H Stretching
+    ("O-H stretch (free, sharp)", 3580, 3650, "Alcohols, phenols (dilute solution)"),
+    ("O-H stretch (H-bonded, broad)", 3200, 3550, "Alcohols, carboxylic acids, water (broad)"),
+    ("N-H stretch (primary amine)", 3300, 3500, "Primary amines (often two bands)"),
+    ("N-H stretch (secondary amine)", 3300, 3400, "Secondary amines"),
+    ("N-H stretch (amides)", 3100, 3500, "Amides (broad)"),
+    ("O-H stretch (carboxylic acid dimer)", 2500, 3300, "Carboxylic acids (very broad)"),
+
+    # C-H Stretching
+    ("C-H stretch (aromatic)", 3000, 3100, "Aromatic rings"),
+    ("=C-H stretch (alkenes)", 3020, 3080, "Alkenes"),
+    ("C-H stretch (asym CH₃)", 2950, 2975, "Methyl groups"),
+    ("C-H stretch (asym CH₂)", 2915, 2935, "Methylene groups"),
+    ("C-H stretch (sym CH₃)", 2865, 2885, "Methyl groups"),
+    ("C-H stretch (sym CH₂)", 2845, 2865, "Methylene groups"),
+    ("C-H stretch (aldehyde)", 2700, 2900, "Aldehydes (characteristic doublet)"),
+
+    # Triple Bonds
+    ("C≡C stretch (alkynes)", 2100, 2260, "Terminal alkynes (weak-medium)"),
+    ("C≡N stretch (nitriles)", 2200, 2260, "Nitriles (sharp)"),
+    ("N=C=O (isocyanates)", 2250, 2275, "Isocyanates (very strong)"),
+
+    # Carbonyl Region (Detailed)
+    ("C=O stretch (acid chlorides)", 1780, 1820, "Acid chlorides (very strong)"),
+    ("C=O stretch (esters)", 1730, 1750, "Esters (very strong)"),
+    ("C=O stretch (aldehydes)", 1720, 1740, "Aldehydes (strong)"),
+    ("C=O stretch (ketones)", 1705, 1725, "Ketones (strong)"),
+    ("C=O stretch (carboxylic acids)", 1700, 1725, "Carboxylic acids (strong, broad)"),
+    ("C=O stretch (amides I)", 1630, 1690, "Amides (strong)"),
+    ("C=O stretch (conjugated)", 1650, 1680, "Conjugated carbonyls"),
+    ("C=O stretch (anhydrides)", 1800, 1850, "Anhydrides (two bands)"),
+
+    # C=C, Aromatic, Amide II
+    ("C=C stretch (alkenes)", 1620, 1680, "Alkenes"),
+    ("C=C stretch (aromatic)", 1580, 1600, "Aromatic rings"),
+    ("Amide II (N-H bend + C-N)", 1510, 1570, "Amides (strong)"),
+    ("Aromatic ring breathing", 1450, 1500, "Aromatic rings"),
+
+    # C-H Bending
+    ("C-H bend (CH₂ scissor)", 1440, 1470, "Alkanes"),
+    ("C-H bend (CH₃ asym)", 1445, 1465, "Methyl groups"),
+    ("C-H bend (CH₃ sym umbrella)", 1365, 1390, "Methyl groups (characteristic)"),
+
+    # C-O, C-N, Fingerprint
+    ("C-O stretch (esters)", 1150, 1250, "Esters (very strong)"),
+    ("C-O stretch (alcohols/ethers)", 1000, 1200, "Alcohols, ethers (strong)"),
+    ("C-N stretch (amines)", 1020, 1250, "Amines"),
+    ("C-O-C stretch (ethers)", 1050, 1150, "Ethers"),
+
+    # Sulfur Compounds
+    ("S-H stretch (thiols)", 2550, 2600, "Thiols (weak, sharp)"),
+    ("S=O stretch (sulfoxides)", 1030, 1070, "Sulfoxides (strong)"),
+    ("S=O stretch (sulfones)", 1120, 1160, "Sulfones (strong)"),
+    ("S=O stretch (sulfonamides)", 1150, 1180, "Sulfonamides"),
+    ("S=O stretch (sulfonates)", 1350, 1370, "Sulfonates (very strong)"),
+
+    # Phosphorus Compounds
+    ("P=O stretch", 1200, 1300, "Phosphates, phosphonates (strong)"),
+    ("P-O-C stretch", 950, 1050, "Phosphate esters"),
+
+    # Halogens & Nitro
+    ("C-F stretch", 1000, 1400, "Fluorinated compounds (very strong)"),
+    ("C-Cl stretch", 600, 800, "Chlorinated compounds"),
+    ("C-Br stretch", 500, 650, "Brominated compounds"),
+    ("N=O stretch (nitro)", 1500, 1550, "Nitro groups (strong)"),
+
+    # ========== INORGANIC / METAL OXIDES / MINERALS ==========
+    
+    # Common Metal Oxides
+    ("Ti-O (TiO₂ anatase)", 500, 700, "Titania (pigments, photocatalysts)"),
+    ("Ti-O (TiO₂ rutile)", 400, 600, "Titania"),
+    ("Fe-O (α-Fe₂O₃ hematite)", 500, 650, "Hematite, rust, pigments"),
+    ("Fe-O (Fe₃O₄ magnetite)", 550, 650, "Magnetite, magnetic nanoparticles"),
+    ("Fe-O (γ-Fe₂O₃ maghemite)", 550, 650, "Maghemite"),
+    ("Zn-O (ZnO)", 400, 600, "Zinc oxide (semiconductors)"),
+    ("Cu-O (CuO)", 400, 600, "Copper(II) oxide"),
+    ("Cu₂O", 600, 650, "Copper(I) oxide"),
+    ("Al-O (Al₂O₃)", 500, 800, "Alumina, corundum"),
+    ("Mg-O (MgO)", 400, 600, "Magnesium oxide (periclase)"),
+    ("Ni-O (NiO)", 400, 550, "Nickel oxide"),
+    ("Co₃O₄", 550, 670, "Cobalt oxide (spinel)"),
+    ("Mn-O (MnO₂)", 500, 650, "Manganese dioxide"),
+    ("Cr₂O₃", 500, 650, "Chromium(III) oxide"),
+    ("Zr-O (ZrO₂)", 400, 600, "Zirconia"),
+    ("Ce-O (CeO₂)", 500, 600, "Ceria (catalysts)"),
+    ("Sn-O (SnO₂)", 500, 700, "Tin dioxide (gas sensors)"),
+    ("WO₃", 600, 800, "Tungsten trioxide"),
+    ("Mo-O (MoO₃)", 800, 1000, "Molybdenum trioxide"),
+    ("V-O (V₂O₅)", 800, 1000, "Vanadium pentoxide"),
+
+    # Mixed Oxides & Structures
+    ("Spinel (MFe₂O₄ type)", 500, 700, "Ferrites, aluminates"),
+    ("Perovskite (ABO₃)", 500, 700, "Perovskite oxides"),
+    ("General M-O (metal oxides)", 400, 700, "Most transition metal oxides"),
+
+    # Silicates & Framework Materials
+    ("Si-O (quartz / SiO₂)", 950, 1100, "Quartz, crystalline silica"),
+    ("Si-O-Si (amorphous silica)", 1000, 1100, "Amorphous silica, glass"),
+    ("Zeolites (T-O-T)", 950, 1100, "Zeolites, molecular sieves"),
+    ("Feldspars", 900, 1100, "Feldspar minerals"),
+    ("Clay minerals (kaolinite, montmorillonite)", 900, 1100, "Clays and layered silicates"),
+
+    # Common Minerals & Salts
+    ("Carbonate (calcite, dolomite)", 1400, 1450, "Calcite, dolomite, metal carbonates"),
+    ("Carbonate (out-of-plane bend)", 850, 880, "Carbonates (medium)"),
+    ("Sulfate (gypsum, anhydrite)", 1100, 1150, "Gypsum, metal sulfates"),
+    ("Phosphate (apatite, metal phosphates)", 1000, 1100, "Apatite, phosphates"),
+    ("Nitrate (NO₃⁻)", 1350, 1380, "Metal nitrates"),
+    ("Perchlorate (ClO₄⁻)", 1080, 1120, "Perchlorates"),
+    ("Borate", 1200, 1400, "Borates"),
+
+    # Hydroxides & Water
+    ("M-OH (metal hydroxides)", 800, 1100, "Metal hydroxides"),
+    ("Structural OH (clays, micas, brucite)", 3600, 3700, "Structural hydroxyl in minerals"),
+    ("Adsorbed/structural water (H-O-H)", 1600, 1650, "Water bending mode"),
+    ("Free/bound water (O-H)", 3200, 3600, "Water stretching (broad)"),
 ]
 
 
