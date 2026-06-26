@@ -838,7 +838,7 @@ with tab_peaks:
                     for idx in peaks_idx:
                         start = max(0, idx - 15)
                         end = min(len(y), idx + 16)
-                        area = np.trapz(y[start:end], wn[start:end])
+                        area = np.trapezoid(y[start:end], wn[start:end])
                         areas.append(round(area, 4))
                     
                     # Build assignment table
