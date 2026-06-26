@@ -60,26 +60,27 @@ st.set_page_config(
 def baseline_als(y, lam=1e5, p=0.01, niter=10):
     """
     Asymmetric Least Squares (ALS) baseline correction.
-    Compatible with newer versions of SciPy.
+    Robust version that avoids shape mismatch errors.
     """
-    from scipy import sparse
+    from scipy.sparse import diags, csr_matrix
     from scipy.sparse.linalg import spsolve
     import numpy as np
 
     L = len(y)
     
-    # Create second difference matrix and convert to CSR format (supports slicing)
-    D = sparse.diags([1, -2, 1], [0, -1, 1], shape=(L, L)).tocsr()
-    D = D[1:-1]                    # Now shape is (L-2, L)
-
+    # Create second difference matrix and convert to CSR format for stability
+    D = diags([1, -2, 1], [0, -1, 1], shape=(L, L)).tocsr()
+    
     w = np.ones(L)
+    
     for _ in range(niter):
-        W = sparse.spdiags(w, 0, L, L)
+        W = diags(w, 0, shape=(L, L))
         Z = W + lam * D.dot(D.T)
         z = spsolve(Z, w * y)
         w = p * (y > z) + (1 - p) * (y < z)
+    
     return z
-
+    
 def linear_baseline(y):
     """Simple linear detrend connecting first and last points."""
     return np.linspace(y[0], y[-1], len(y))
