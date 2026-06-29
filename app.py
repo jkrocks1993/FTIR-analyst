@@ -179,6 +179,52 @@ FUNCTIONAL_GROUPS = [
     ("Nitrate (NO₃⁻)", 1350, 1380, "Metal nitrates"),
     ("M-OH (metal hydroxides)", 800, 1100, "Metal hydroxides"),
     ("Structural OH in minerals", 3600, 3700, "Clays, micas"),
+    #polymer
+    ("PE (polyethylene) - CH₂ rocking", 720, 730, "Characteristic of polyethylene"),
+("PP (polypropylene) - CH₃ rocking", 970, 995, "Characteristic of polypropylene"),
+("PVC - C-Cl stretch", 600, 700, "Polyvinyl chloride"),
+("PET - C=O + C-O", 1710, 1725, "Polyethylene terephthalate"),
+("PS (polystyrene) - aromatic C=C", 1450, 1490, "Polystyrene"),
+("Silicone (Si-CH₃)", 1250, 1260, "PDMS, silicones"),
+("Silicone (Si-O-Si)", 1000, 1100, "Silicone polymers"),
+#sulfur and phosphorus compounds
+("S=O stretch (sulfoxides)", 1030, 1070, "Strong"),
+("S=O stretch (sulfones)", 1120, 1160, "Strong, two bands often"),
+("S=O stretch (sulfonamides)", 1150, 1180, "Strong"),
+("P=O stretch (phosphine oxides)", 1150, 1200, "Very strong"),
+("P-O-C (phosphate esters)", 950, 1050, "Strong"),
+("P-H stretch", 2250, 2350, "Medium"),
+#aromatiic substitution patterns
+("Aromatic C-H oop (monosubstituted)", 690, 710, "Strong"),
+("Aromatic C-H oop (ortho-disubstituted)", 735, 770, "Strong"),
+("Aromatic C-H oop (meta-disubstituted)", 680, 710, "Strong"),
+("Aromatic C-H oop (para-disubstituted)", 810, 840, "Strong"),
+("Aromatic C-H oop (1,2,4-trisubstituted)", 870, 900, "Strong"),
+#more metals and  mixed oxides
+("Ba-O (BaO)", 400, 550, "Barium oxide"),
+("Ca-O (CaO)", 400, 550, "Calcium oxide"),
+("Sr-O (SrO)", 400, 550, "Strontium oxide"),
+("Pb-O (PbO)", 400, 600, "Lead oxide"),
+("Bi-O (Bi₂O₃)", 500, 650, "Bismuth oxide"),
+("Ta-O (Ta₂O₅)", 600, 800, "Tantalum pentoxide"),
+("Nb-O (Nb₂O₅)", 600, 800, "Niobium pentoxide"),
+("Hf-O (HfO₂)", 400, 600, "Hafnia"),
+("Y-O (Y₂O₃)", 500, 600, "Yttria"),
+("La-O (La₂O₃)", 500, 600, "Lanthanum oxide"),
+#more inorganic salts
+("Cyanide (CN⁻)", 2000, 2200, "Sharp"),
+("Thiocyanate (SCN⁻)", 2050, 2150, "Strong"),
+("Azide (N₃⁻)", 2000, 2100, "Strong"),
+("Chlorate (ClO₃⁻)", 900, 950, "Strong"),
+("Bromate (BrO₃⁻)", 800, 850, "Strong"),
+("Iodate (IO₃⁻)", 750, 800, "Strong"),
+("Chromate (CrO₄²⁻)", 850, 900, "Strong"),
+("Dichromate (Cr₂O₇²⁻)", 900, 950, "Strong"),
+#organometallics
+("M-CO (metal carbonyls)", 1800, 2100, "Very strong, sharp"),
+("M-CN (metal cyanides)", 2000, 2200, "Sharp"),
+("M-H (metal hydrides)", 1700, 2200, "Variable"),
+("M-O (metal alkoxides)", 500, 700, "Strong"),
 ]
 
 
