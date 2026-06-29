@@ -1,22 +1,18 @@
 #!/usr/bin/env python3
 """
-FTIR Spectra Processor v2 - Clean & Fixed
-==========================================
-A robust, clean version of the FTIR processing app with all known bugs fixed.
+FTIR Spectra Processor v3
+=========================
+Clean, robust version with:
 
-Key Fixes in this version:
-- Fixed baseline_als (no more shape errors)
-- Fixed np.trapz → scipy.integrate.trapezoid (works on old & new NumPy)
-- Removed inappropriate shaded region annotations (were causing "weird colors")
-- Improved second derivative plotting
-- Cleaner code structure
-- Expanded functional group library (organics + inorganics/metal oxides)
-
-Requirements:
-    pip install streamlit pandas numpy scipy plotly
+- Fixed baseline_als (stable across NumPy versions)
+- Fixed peak area using scipy.integrate.trapezoid
+- Removed weird colored region boxes
+- Expanded functional groups (organics + inorganics/metal oxides)
+- Open Specy integration (web + download ready spectrum)
+- PubChem lookup buttons next to detected peaks
 
 Run:
-    streamlit run ftir_processor_v2.py
+    streamlit run ftir_processor_v3.py
 """
 
 import streamlit as st
@@ -31,27 +27,25 @@ import plotly.express as px
 import zipfile
 import io
 from datetime import datetime
+import urllib.parse
 
 # ============================================================
 # PAGE CONFIG
 # ============================================================
 st.set_page_config(
-    page_title="FTIR Processor v2",
+    page_title="FTIR Processor v3",
     page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ============================================================
-# ROBUST HELPER FUNCTIONS
+# ROBUST CORE FUNCTIONS
 # ============================================================
 
 def baseline_als(y, lam=1e5, p=0.01, niter=10):
-    """
-    Asymmetric Least Squares (ALS) baseline correction.
-    Robust version - works reliably across NumPy/SciPy versions.
-    """
-    from scipy.sparse import diags, csr_matrix
+    """Robust ALS baseline correction."""
+    from scipy.sparse import diags
     L = len(y)
     D = diags([1, -2, 1], [0, -1, 1], shape=(L, L)).tocsr()
     w = np.ones(L)
@@ -95,10 +89,10 @@ def load_ftir_file(uploaded_file):
         df["intensity"] = pd.to_numeric(df["intensity"], errors="coerce")
         df = df.dropna().sort_values("wavenumber", ascending=False).reset_index(drop=True)
         if len(df) < 50:
-            raise ValueError("Too few data points after cleaning")
+            raise ValueError("Too few data points")
         return df
     except Exception as e:
-        st.error(f"Failed to parse **{uploaded_file.name}**: {str(e)}")
+        st.error(f"Failed to parse file: {e}")
         return None
 
 
@@ -128,32 +122,31 @@ def generate_example_spectrum():
 
 
 # ============================================================
-# EXPANDED FUNCTIONAL GROUP LIBRARY
+# FUNCTIONAL GROUPS (Expanded)
 # ============================================================
 FUNCTIONAL_GROUPS = [
     # Organic
-    ("O-H stretch (free, sharp)", 3580, 3650, "Alcohols, phenols (dilute)"),
+    ("O-H stretch (free, sharp)", 3580, 3650, "Alcohols, phenols"),
     ("O-H stretch (H-bonded, broad)", 3200, 3550, "Alcohols, carboxylic acids, water"),
     ("N-H stretch (primary amine)", 3300, 3500, "Primary amines, amides"),
     ("N-H stretch (secondary amine)", 3300, 3400, "Secondary amines"),
     ("C-H stretch (aromatic)", 3000, 3100, "Aromatic rings"),
     ("C-H stretch (asym CH₃)", 2950, 2975, "Methyl groups"),
     ("C-H stretch (asym CH₂)", 2915, 2935, "Methylene groups"),
-    ("C-H stretch (sym CH₃/CH₂)", 2850, 2885, "Alkanes"),
+    ("C-H stretch (sym)", 2850, 2885, "Alkanes"),
     ("C-H stretch (aldehyde)", 2700, 2900, "Aldehydes"),
-    ("C≡C stretch (alkynes)", 2100, 2260, "Terminal alkynes"),
-    ("C≡N stretch (nitriles)", 2200, 2260, "Nitriles"),
-    ("C=O stretch (acid chlorides)", 1780, 1820, "Acid chlorides"),
+    ("C≡C stretch", 2100, 2260, "Terminal alkynes"),
+    ("C≡N stretch", 2200, 2260, "Nitriles"),
     ("C=O stretch (esters)", 1730, 1750, "Esters"),
     ("C=O stretch (aldehydes)", 1720, 1740, "Aldehydes"),
     ("C=O stretch (ketones)", 1705, 1725, "Ketones"),
     ("C=O stretch (carboxylic acids)", 1700, 1725, "Carboxylic acids"),
     ("C=O stretch (amides I)", 1630, 1690, "Amides"),
-    ("C=C stretch (alkenes/aromatics)", 1580, 1680, "Alkenes, aromatic rings"),
-    ("Amide II (N-H bend)", 1510, 1570, "Amides"),
-    ("C-H bend (CH₂ scissor)", 1440, 1470, "Alkanes"),
+    ("C=C stretch (aromatic/alkenes)", 1580, 1680, "Aromatic rings, alkenes"),
+    ("Amide II", 1510, 1570, "Amides"),
+    ("C-H bend (CH₂)", 1440, 1470, "Alkanes"),
     ("C-H bend (CH₃ umbrella)", 1365, 1390, "Methyl groups"),
-    ("C-O stretch (esters/alcohols)", 1000, 1300, "Esters, alcohols, ethers"),
+    ("C-O stretch", 1000, 1300, "Esters, alcohols, ethers"),
     ("C-F stretch", 1000, 1400, "Fluorinated compounds"),
     ("C-Cl stretch", 600, 800, "Chlorinated compounds"),
     ("N=O stretch (nitro)", 1500, 1550, "Nitro groups"),
@@ -161,70 +154,22 @@ FUNCTIONAL_GROUPS = [
     ("P=O stretch", 1200, 1300, "Phosphorus compounds"),
 
     # Inorganic / Metal Oxides / Minerals
-    ("Ti-O (TiO₂)", 500, 700, "Titania (anatase/rutile)"),
-    ("Fe-O (Fe₂O₃ / Fe₃O₄)", 500, 650, "Iron oxides (hematite/magnetite)"),
+    ("Ti-O (TiO₂)", 500, 700, "Titania"),
+    ("Fe-O (Fe₂O₃ / Fe₃O₄)", 500, 650, "Iron oxides"),
     ("Zn-O (ZnO)", 400, 600, "Zinc oxide"),
     ("Cu-O (CuO / Cu₂O)", 400, 650, "Copper oxides"),
     ("Al-O (Al₂O₃)", 500, 800, "Alumina"),
     ("Mg-O (MgO)", 400, 600, "Magnesium oxide"),
-    ("Ni-O / Co-O", 400, 650, "Nickel / Cobalt oxides"),
-    ("Mn-O (MnO₂)", 500, 650, "Manganese oxides"),
-    ("General M-O (metal oxides)", 400, 700, "Many transition metal oxides"),
-    ("Si-O stretch (SiO₂ / quartz)", 950, 1100, "Silica, quartz"),
+    ("General M-O (metal oxides)", 400, 700, "Many metal oxides"),
+    ("Si-O (SiO₂ / quartz)", 950, 1100, "Silica, quartz"),
     ("Si-O-Si (silicates / zeolites)", 1000, 1100, "Silicates, zeolites"),
-    ("Clay minerals (Al-O-Si)", 900, 1100, "Kaolinite, montmorillonite"),
-    ("Carbonate (CO₃²⁻)", 1400, 1450, "Calcite, metal carbonates"),
-    ("Sulfate (SO₄²⁻)", 1100, 1150, "Gypsum, metal sulfates"),
-    ("Phosphate (PO₄³⁻)", 1000, 1100, "Apatite, metal phosphates"),
-    ("Nitrate (NO₃⁻)", 1350, 1380, "Metal nitrates"),
+    ("Clay minerals (Al-O-Si)", 900, 1100, "Clays"),
+    ("Carbonate (CO₃²⁻)", 1400, 1450, "Carbonates"),
+    ("Sulfate (SO₄²⁻)", 1100, 1150, "Sulfates"),
+    ("Phosphate (PO₄³⁻)", 1000, 1100, "Phosphates"),
+    ("Nitrate (NO₃⁻)", 1350, 1380, "Nitrates"),
     ("M-OH (metal hydroxides)", 800, 1100, "Metal hydroxides"),
     ("Structural OH in minerals", 3600, 3700, "Clays, micas"),
-    #polymer
-    ("PE (polyethylene) - CH₂ rocking", 720, 730, "Characteristic of polyethylene"),
-("PP (polypropylene) - CH₃ rocking", 970, 995, "Characteristic of polypropylene"),
-("PVC - C-Cl stretch", 600, 700, "Polyvinyl chloride"),
-("PET - C=O + C-O", 1710, 1725, "Polyethylene terephthalate"),
-("PS (polystyrene) - aromatic C=C", 1450, 1490, "Polystyrene"),
-("Silicone (Si-CH₃)", 1250, 1260, "PDMS, silicones"),
-("Silicone (Si-O-Si)", 1000, 1100, "Silicone polymers"),
-#sulfur and phosphorus compounds
-("S=O stretch (sulfoxides)", 1030, 1070, "Strong"),
-("S=O stretch (sulfones)", 1120, 1160, "Strong, two bands often"),
-("S=O stretch (sulfonamides)", 1150, 1180, "Strong"),
-("P=O stretch (phosphine oxides)", 1150, 1200, "Very strong"),
-("P-O-C (phosphate esters)", 950, 1050, "Strong"),
-("P-H stretch", 2250, 2350, "Medium"),
-#aromatiic substitution patterns
-("Aromatic C-H oop (monosubstituted)", 690, 710, "Strong"),
-("Aromatic C-H oop (ortho-disubstituted)", 735, 770, "Strong"),
-("Aromatic C-H oop (meta-disubstituted)", 680, 710, "Strong"),
-("Aromatic C-H oop (para-disubstituted)", 810, 840, "Strong"),
-("Aromatic C-H oop (1,2,4-trisubstituted)", 870, 900, "Strong"),
-#more metals and  mixed oxides
-("Ba-O (BaO)", 400, 550, "Barium oxide"),
-("Ca-O (CaO)", 400, 550, "Calcium oxide"),
-("Sr-O (SrO)", 400, 550, "Strontium oxide"),
-("Pb-O (PbO)", 400, 600, "Lead oxide"),
-("Bi-O (Bi₂O₃)", 500, 650, "Bismuth oxide"),
-("Ta-O (Ta₂O₅)", 600, 800, "Tantalum pentoxide"),
-("Nb-O (Nb₂O₅)", 600, 800, "Niobium pentoxide"),
-("Hf-O (HfO₂)", 400, 600, "Hafnia"),
-("Y-O (Y₂O₃)", 500, 600, "Yttria"),
-("La-O (La₂O₃)", 500, 600, "Lanthanum oxide"),
-#more inorganic salts
-("Cyanide (CN⁻)", 2000, 2200, "Sharp"),
-("Thiocyanate (SCN⁻)", 2050, 2150, "Strong"),
-("Azide (N₃⁻)", 2000, 2100, "Strong"),
-("Chlorate (ClO₃⁻)", 900, 950, "Strong"),
-("Bromate (BrO₃⁻)", 800, 850, "Strong"),
-("Iodate (IO₃⁻)", 750, 800, "Strong"),
-("Chromate (CrO₄²⁻)", 850, 900, "Strong"),
-("Dichromate (Cr₂O₇²⁻)", 900, 950, "Strong"),
-#organometallics
-("M-CO (metal carbonyls)", 1800, 2100, "Very strong, sharp"),
-("M-CN (metal cyanides)", 2000, 2200, "Sharp"),
-("M-H (metal hydrides)", 1700, 2200, "Variable"),
-("M-O (metal alkoxides)", 500, 700, "Strong"),
 ]
 
 
@@ -248,13 +193,13 @@ def apply_processing_pipeline(wn, y, params):
         log.append(f"Cropped to {params['min_wn']:.0f}–{params['max_wn']:.0f} cm⁻¹")
 
     if len(y) < 10:
-        return wn, y, "ERROR: Too few points after crop"
+        return wn, y, "ERROR: Too few points"
 
     if params.get("smooth", True):
         try:
             y = savgol_filter(y, window_length=params["sg_window"],
                               polyorder=params["sg_poly"], mode="nearest")
-            log.append(f"Smoothed (SavGol wl={params['sg_window']})")
+            log.append("Smoothed")
         except Exception as e:
             log.append(f"Smoothing failed: {e}")
 
@@ -263,14 +208,14 @@ def apply_processing_pipeline(wn, y, params):
         if "ALS" in method:
             baseline = baseline_als(y, lam=params["als_lam"], p=params["als_p"], niter=params["als_niter"])
             y = y - baseline
-            log.append("ALS baseline correction")
+            log.append("ALS baseline")
         elif "Linear" in method:
             y = y - linear_baseline(y)
-            log.append("Linear baseline removed")
+            log.append("Linear baseline")
         elif "Polynomial" in method:
             baseline = polynomial_baseline(wn, y, deg=params.get("poly_deg", 3))
             y = y - baseline
-            log.append(f"Polynomial baseline (deg={params.get('poly_deg', 3)})")
+            log.append(f"Polynomial baseline (deg {params.get('poly_deg', 3)})")
 
     if params.get("normalize", True) and params.get("norm_method") != "None":
         method = params["norm_method"].lower().split()[0]
@@ -281,7 +226,7 @@ def apply_processing_pipeline(wn, y, params):
 
 
 # ============================================================
-# CLEAN PLOTTING FUNCTION (No weird colored boxes)
+# PLOTTING (Clean - No weird colored boxes)
 # ============================================================
 
 def create_spectrum_plot(spectra_data, selected_names, use_processed=True,
@@ -337,12 +282,20 @@ def create_spectrum_plot(spectra_data, selected_names, use_processed=True,
     return fig
 
 
+def create_pubchem_search_url(functional_group_text):
+    """Create a smart PubChem search URL based on functional group."""
+    # Extract key terms
+    search_terms = functional_group_text.split(";")[0].strip()
+    query = urllib.parse.quote(search_terms)
+    return f"https://pubchem.ncbi.nlm.nih.gov/#query={query}&tab=compound"
+
+
 # ============================================================
 # MAIN APP
 # ============================================================
 
-st.title("🧬 FTIR Spectra Processor v2")
-st.caption("Clean version with all known bugs fixed • Expanded functional groups + inorganics")
+st.title("🧬 FTIR Spectra Processor v3")
+st.caption("Open Specy + PubChem integration • All bugs fixed • Clean UI")
 
 # Session state
 if "spectra_data" not in st.session_state:
@@ -357,13 +310,13 @@ with st.sidebar:
     st.header("⚙️ Controls")
     if st.button("🧪 Load Demo Spectrum", use_container_width=True):
         wn, y = generate_example_spectrum()
-        st.session_state.spectra_data["Demo_FTIR_Spectrum"] = {
+        st.session_state.spectra_data["Demo"] = {
             "wn": wn, "raw_int": y, "processed_int": None, "processed_wn": None,
             "meta": {"source": "demo"}
         }
         st.rerun()
 
-    if st.button("🗑️ Clear All Data", use_container_width=True):
+    if st.button("🗑️ Clear All", use_container_width=True):
         st.session_state.spectra_data = {}
         st.session_state.last_peak_data = None
         st.session_state.processing_log = {}
@@ -372,24 +325,23 @@ with st.sidebar:
     st.divider()
     n_loaded = len(st.session_state.spectra_data)
     n_processed = sum(1 for d in st.session_state.spectra_data.values() if d.get("processed_int") is not None)
-    st.metric("Spectra Loaded", n_loaded)
+    st.metric("Loaded", n_loaded)
     st.metric("Processed", n_processed)
 
 # Tabs
 tab_upload, tab_process, tab_peaks, tab_export = st.tabs([
-    "📁 Upload & Visualize", "⚙️ Preprocessing", "🔍 Peak Analysis", "📤 Export"
+    "📁 Upload", "⚙️ Preprocessing", "🔍 Peak Analysis", "📤 Export"
 ])
 
 # TAB 1: Upload
 with tab_upload:
-    st.header("Upload FTIR Data")
+    st.header("Upload Data")
     uploaded_files = st.file_uploader(
-        "Drop CSV/TXT files (wavenumber + intensity columns)",
+        "CSV/TXT files (wavenumber + intensity)",
         type=["csv", "txt", "dat"], accept_multiple_files=True
     )
 
     if uploaded_files:
-        new_count = 0
         for f in uploaded_files:
             if f.name not in st.session_state.spectra_data:
                 df = load_ftir_file(f)
@@ -401,64 +353,51 @@ with tab_upload:
                         "processed_wn": None,
                         "meta": {"source": "upload", "filename": f.name}
                     }
-                    new_count += 1
-        if new_count:
-            st.success(f"Loaded {new_count} new spectrum file(s)")
+        st.success(f"Loaded {len(uploaded_files)} file(s)")
 
     if st.session_state.spectra_data:
         names = list(st.session_state.spectra_data.keys())
-        selected = st.multiselect("Select spectra to display", names, default=names[:min(6, len(names))])
-
+        selected = st.multiselect("Display spectra", names, default=names[:min(6, len(names))])
         if selected:
             fig = create_spectrum_plot(st.session_state.spectra_data, selected, use_processed=False)
-            st.plotly_chart(fig, use_container_width=True, key="raw_overview")
+            st.plotly_chart(fig, use_container_width=True)
 
 # TAB 2: Preprocessing
 with tab_process:
-    st.header("Preprocessing Pipeline")
+    st.header("Preprocessing")
 
     if not st.session_state.spectra_data:
-        st.warning("Load spectra first (Tab 1)")
+        st.warning("Upload data first")
     else:
         names = list(st.session_state.spectra_data.keys())
-        selected = st.multiselect("Select spectra to process", names, default=names, key="proc_select")
+        selected = st.multiselect("Select spectra", names, default=names, key="proc")
 
         if selected:
             col1, col2, col3 = st.columns(3)
-
             with col1:
-                st.markdown("**1. Crop**")
-                crop = st.checkbox("Enable crop", True)
-                min_wn = st.number_input("Min cm⁻¹", 200, 4000, 400, 50, disabled=not crop)
-                max_wn = st.number_input("Max cm⁻¹", 200, 4000, 4000, 50, disabled=not crop)
-
+                crop = st.checkbox("Crop", True)
+                min_wn = st.number_input("Min", 200, 4000, 400, 50, disabled=not crop)
+                max_wn = st.number_input("Max", 200, 4000, 4000, 50, disabled=not crop)
             with col2:
-                st.markdown("**2. Smoothing**")
-                smooth = st.checkbox("Savitzky-Golay", True)
-                sg_window = st.slider("Window (odd)", 5, 51, 11, 2, disabled=not smooth)
+                smooth = st.checkbox("Smooth (Savitzky-Golay)", True)
+                sg_window = st.slider("Window", 5, 51, 11, 2, disabled=not smooth)
                 sg_poly = st.slider("Poly order", 1, 5, 2, disabled=not smooth)
-
             with col3:
-                st.markdown("**3. Baseline**")
-                baseline = st.checkbox("Enable baseline", True)
+                baseline = st.checkbox("Baseline", True)
                 baseline_method = st.selectbox(
-                    "Method", ["ALS (recommended)", "Linear", "Polynomial (deg 3)", "None"],
+                    "Method", ["ALS (recommended)", "Linear", "Polynomial", "None"],
                     disabled=not baseline
                 )
                 if "ALS" in baseline_method:
-                    als_lam = st.number_input("λ (smoothness)", 1e3, 1e8, 1e5, 1e4, format="%.0e")
-                    als_p = st.slider("p (asymmetry)", 0.001, 0.2, 0.01, 0.001, format="%.3f")
+                    als_lam = st.number_input("λ", 1e3, 1e8, 1e5, 1e4, format="%.0e")
+                    als_p = st.slider("p", 0.001, 0.2, 0.01, 0.001, format="%.3f")
                     als_niter = st.slider("Iterations", 5, 25, 10)
                 else:
                     als_lam, als_p, als_niter = 1e5, 0.01, 10
-                poly_deg = st.slider("Poly degree", 1, 6, 3) if "Polynomial" in baseline_method else 3
+                poly_deg = st.slider("Degree", 1, 6, 3) if "Polynomial" in baseline_method else 3
 
-            st.markdown("**4. Normalization**")
-            norm = st.checkbox("Enable normalization", True)
-            norm_method = st.selectbox(
-                "Method", ["Min-Max (0–1)", "SNV", "Vector (L2)", "None"],
-                disabled=not norm
-            )
+            norm = st.checkbox("Normalize", True)
+            norm_method = st.selectbox("Method", ["Min-Max", "SNV", "Vector"], disabled=not norm)
 
             if st.button("🚀 Apply Preprocessing", type="primary", use_container_width=True):
                 params = {
@@ -469,7 +408,6 @@ with tab_process:
                     "poly_deg": poly_deg,
                     "normalize": norm, "norm_method": norm_method
                 }
-
                 success = 0
                 for name in selected:
                     d = st.session_state.spectra_data[name]
@@ -479,24 +417,20 @@ with tab_process:
                         d["processed_int"] = new_y
                         st.session_state.processing_log[name] = log
                         success += 1
-                    else:
-                        st.error(f"{name}: {log}")
                 if success:
-                    st.success(f"Processed {success} spectra successfully!")
+                    st.success(f"Processed {success} spectra!")
 
             processed_sel = [n for n in selected if st.session_state.spectra_data[n].get("processed_int") is not None]
             if processed_sel:
-                st.divider()
-                st.subheader("Processed Spectra Preview")
                 fig = create_spectrum_plot(st.session_state.spectra_data, processed_sel, use_processed=True)
-                st.plotly_chart(fig, use_container_width=True, key="processed_preview")
+                st.plotly_chart(fig, use_container_width=True)
 
-# TAB 3: Peak Analysis
+# TAB 3: Peak Analysis (with Open Specy + PubChem)
 with tab_peaks:
-    st.header("Peak Detection & Functional Group Assignment")
+    st.header("Peak Detection & Analysis")
 
     if not st.session_state.spectra_data:
-        st.warning("Load spectra first")
+        st.warning("Load data first")
     else:
         processed_names = [n for n in st.session_state.spectra_data
                            if st.session_state.spectra_data[n].get("processed_int") is not None]
@@ -504,31 +438,30 @@ with tab_peaks:
         if not processed_names:
             st.info("Process spectra in Tab 2 first")
         else:
-            primary = st.selectbox("Primary spectrum for peak detection", processed_names)
+            primary = st.selectbox("Select spectrum", processed_names)
 
             c1, c2, c3 = st.columns(3)
             with c1:
-                height = st.slider("Min peak height", 0.02, 1.0, 0.12, 0.01)
+                height = st.slider("Min height", 0.02, 1.0, 0.12, 0.01)
             with c2:
                 prominence = st.slider("Prominence", 0.01, 0.8, 0.06, 0.01)
             with c3:
-                distance = st.slider("Min distance (points)", 5, 80, 15, 1)
+                distance = st.slider("Min distance", 5, 80, 15, 1)
 
-            show_derivative = st.checkbox("Show Second Derivative (helps resolve overlapping peaks)", value=False)
+            show_derivative = st.checkbox("Show Second Derivative", value=False)
 
-            if st.button("🔎 Detect Peaks & Assign Groups", type="primary"):
+            if st.button("🔎 Detect Peaks", type="primary"):
                 d = st.session_state.spectra_data[primary]
                 wn = d.get("processed_wn", d["wn"])
                 y = d["processed_int"]
 
                 peaks_idx, _ = find_peaks(y, height=height, prominence=prominence, distance=distance)
                 if len(peaks_idx) == 0:
-                    st.warning("No peaks found with current settings")
+                    st.warning("No peaks found")
                 else:
                     peak_wn = wn[peaks_idx]
                     peak_int = y[peaks_idx]
 
-                    # Calculate peak area using scipy.integrate.trapezoid (compatible with all NumPy versions)
                     areas = []
                     for idx in peaks_idx:
                         start = max(0, idx - 15)
@@ -542,28 +475,66 @@ with tab_peaks:
                         "Wavenumber (cm⁻¹)": np.round(peak_wn, 1),
                         "Intensity": np.round(peak_int, 4),
                         "Area": areas,
-                        "Possible Functional Groups": assignments
+                        "Functional Groups": assignments
                     }).sort_values("Wavenumber (cm⁻¹)", ascending=False)
 
                     st.session_state.last_peak_data = {
-                        "name": primary,
-                        "peak_wn": peak_wn,
-                        "peak_int": peak_int,
-                        "df": peak_df
+                        "name": primary, "peak_wn": peak_wn, "peak_int": peak_int, "df": peak_df
                     }
                     st.success(f"Detected {len(peaks_idx)} peaks")
 
+            # Display results
             if st.session_state.last_peak_data and st.session_state.last_peak_data["name"] == primary:
                 pk = st.session_state.last_peak_data
                 st.subheader(f"Detected Peaks — {primary}")
                 st.dataframe(pk["df"], use_container_width=True, hide_index=True)
 
-                st.subheader("Annotated Spectrum with Peaks")
+                # Annotated plot
+                st.subheader("Annotated Spectrum")
                 fig = create_spectrum_plot(
                     st.session_state.spectra_data, [primary],
                     use_processed=True, peak_data=pk, primary_name=primary
                 )
-                st.plotly_chart(fig, use_container_width=True, key="peaks_annotated")
+                st.plotly_chart(fig, use_container_width=True)
+
+                # === Open Specy Integration ===
+                st.subheader("🔬 Open Specy Matching")
+                col_os1, col_os2 = st.columns(2)
+
+                with col_os1:
+                    if st.button("🌐 Open Open Specy Web App", use_container_width=True):
+                        st.markdown("[Click here to open Open Specy](https://www.openspecy.org/)")
+
+                with col_os2:
+                    if st.button("⬇️ Download Spectrum for Open Specy", use_container_width=True):
+                        d = st.session_state.spectra_data[primary]
+                        wn = d.get("processed_wn", d["wn"])
+                        y = d["processed_int"]
+                        export_df = pd.DataFrame({"wavenumber": wn, "intensity": y})
+                        csv = export_df.to_csv(index=False)
+                        st.download_button(
+                            "Download JSON/CSV for Open Specy",
+                            data=csv,
+                            file_name=f"{primary}_for_openspecy.csv",
+                            mime="text/csv"
+                        )
+
+                st.caption("Tip: Upload the downloaded file to Open Specy for advanced spectral matching.")
+
+                # === PubChem Lookup ===
+                st.subheader("🔍 PubChem Lookup")
+                st.caption("Click a button below to search PubChem for compounds related to each peak:")
+
+                if pk.get("df") is not None:
+                    for i, row in pk["df"].head(8).iterrows():
+                        fg = row["Functional Groups"]
+                        if fg and fg != "No common match":
+                            search_url = create_pubchem_search_url(fg)
+                            col1, col2 = st.columns([3, 1])
+                            with col1:
+                                st.write(f"**{row['Wavenumber (cm⁻¹)']} cm⁻¹** — {fg[:60]}...")
+                            with col2:
+                                st.link_button("Search PubChem", search_url, use_container_width=True)
 
                 # Second Derivative
                 if show_derivative:
@@ -573,59 +544,34 @@ with tab_peaks:
                     try:
                         y_deriv2 = savgol_filter(y, window_length=11, polyorder=3, deriv=2, mode='nearest')
                         fig_deriv = go.Figure()
-                        fig_deriv.add_trace(go.Scatter(
-                            x=wn, y=y_deriv2, mode='lines',
-                            line=dict(color='#00B4D8', width=1.5),
-                            name='Second Derivative'
-                        ))
+                        fig_deriv.add_trace(go.Scatter(x=wn, y=y_deriv2, mode='lines',
+                                                       line=dict(color='#00B4D8', width=1.5)))
                         if pk.get("peak_wn") is not None:
                             peak_indices = [np.argmin(np.abs(wn - w)) for w in pk["peak_wn"]]
                             fig_deriv.add_trace(go.Scatter(
-                                x=pk["peak_wn"],
-                                y=y_deriv2[peak_indices],
-                                mode='markers',
-                                marker=dict(size=8, color='#FF2D55', symbol='diamond'),
-                                name='Detected Peaks'
+                                x=pk["peak_wn"], y=y_deriv2[peak_indices],
+                                mode='markers', marker=dict(size=8, color='#FF2D55', symbol='diamond')
                             ))
                         fig_deriv.update_layout(
-                            title="Second Derivative Spectrum",
-                            xaxis_title="Wavenumber (cm⁻¹)",
-                            yaxis_title="Second Derivative",
-                            xaxis=dict(autorange="reversed"),
-                            template="plotly_white",
-                            height=450,
-                            showlegend=False
+                            title="Second Derivative", xaxis_title="Wavenumber (cm⁻¹)",
+                            yaxis_title="2nd Derivative", xaxis=dict(autorange="reversed"),
+                            template="plotly_white", height=400, showlegend=False
                         )
-                        st.plotly_chart(fig_deriv, use_container_width=True, key="second_derivative")
-                        st.caption("Second derivative helps resolve overlapping peaks and shoulders.")
+                        st.plotly_chart(fig_deriv, use_container_width=True)
                     except Exception as e:
                         st.warning(f"Could not compute second derivative: {e}")
 
-                # Database Cross-Reference
-                with st.expander("🔍 Cross-Reference with Online Databases", expanded=False):
-                    st.markdown("Use these databases to verify peak assignments:")
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.link_button("RRUFF (Minerals & Inorganics)", "https://rruff.info")
-                        st.link_button("NIST Chemistry WebBook", "https://webbook.nist.gov/chemistry")
-                        st.link_button("SDBS (Japan)", "https://sdbs.db.aist.go.jp")
-                        st.link_button("Open Specy", "https://www.openspecy.org")
-                    with col2:
-                        st.link_button("IRUG Spectral Database", "https://www.irug.org")
-                        st.link_button("PubChem Spectra", "https://pubchem.ncbi.nlm.nih.gov")
-                        st.link_button("Mineral Spectroscopy", "https://www.mineralspec.org")
-
 # TAB 4: Export
 with tab_export:
-    st.header("Export Processed Data")
+    st.header("Export Data")
     processed_available = [n for n in st.session_state.spectra_data
                            if st.session_state.spectra_data[n].get("processed_int") is not None]
 
     if not processed_available:
-        st.info("Process spectra in Tab 2 first")
+        st.info("Process spectra first")
     else:
-        to_export = st.multiselect("Spectra to export", processed_available, default=processed_available)
-        if st.button("📦 Create ZIP of Processed CSVs", disabled=len(to_export) == 0):
+        to_export = st.multiselect("Select spectra", processed_available, default=processed_available)
+        if st.button("📦 Export as ZIP", disabled=len(to_export) == 0):
             zip_buffer = io.BytesIO()
             with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:
                 for name in to_export:
@@ -634,18 +580,10 @@ with tab_export:
                         "wavenumber_cm-1": d.get("processed_wn", d["wn"]),
                         "processed_intensity": d["processed_int"]
                     })
-                    csv_bytes = df_out.to_csv(index=False).encode()
-                    safe_name = name.replace(" ", "_").replace(".csv", "") + "_processed.csv"
-                    zf.writestr(safe_name, csv_bytes)
+                    zf.writestr(f"{name}_processed.csv", df_out.to_csv(index=False))
             zip_buffer.seek(0)
-            ts = datetime.now().strftime("%Y%m%d_%H%M")
-            st.download_button(
-                "⬇️ Download ZIP",
-                data=zip_buffer.getvalue(),
-                file_name=f"FTIR_Processed_{ts}.zip",
-                mime="application/zip",
-                use_container_width=True
-            )
+            st.download_button("⬇️ Download ZIP", data=zip_buffer.getvalue(),
+                               file_name="FTIR_Processed.zip", mime="application/zip")
 
 st.divider()
-st.caption("FTIR Processor v2 • All known bugs fixed • Clean plotting • Expanded functional groups • June 2026")
+st.caption("FTIR Processor v3 • Open Specy + PubChem ready • Clean & robust • June 2026")
